@@ -1,38 +1,71 @@
-// var nodemailer = require('nodemailer');
-import nodemailer from "nodemailer";
+// import nodemailer from "nodemailer"
+// import {google} from "googleapis"
+// import config from "./config";
 
-var val = Math.floor(10000 + Math.random() * 90000);
-// console.log(val);
+const nodemailer = require('nodemailer')
+const {google} = require('googleapis')
+const config = require('./config.js')
 
-var transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "kumarniteshoffice786@gmail.com",
-    pass: "Nitesh@786",
-  },
-});
 
-var mailOptions = {
-  from: "kumarniteshoffice786@gmail.com",
-  to: "surajsinghsultan222@gmail.com",
-  subject: "Sending Email using Node.js",
-  html: `
 
-    <h1>  Hii This Is Your Code Please Keep It Private   </h1>
-    <p>  hey buddy your secret code is <span style="font-weight: bold;" >${val}</span>   </p>
-    
-    
-    
-    
-    
-    
-    `,
-};
+const OAuth2 = google.auth.OAuth2;
 
-transporter.sendMail(mailOptions, function (error, info) {
-  if (error) {
-    console.log(error);
-  } else {
-    console.log("Email sent: " + info.response);
-  }
-});
+
+
+
+const OAuth2_Client = new OAuth2(config.clientId,config.clientSecret)
+
+OAuth2_Client.setCredentials({ refresh_token : config.refreshToken })
+
+
+
+
+function send_mail(name,recipient) {
+
+    const accessToken = OAuth2_Client.getAccessToken()
+
+    const transport = nodemailer.createTransport({
+        service:'gmail',
+        auth:{
+            type:'OAuth2',
+            user:config.user,
+            clientId:config.clientId,
+            clientSecret:config.clientSecret,
+            refreshToken:config.refreshToken,
+            accessToken:accessToken
+        }
+
+    })
+
+
+    const mail_options = {
+        from :config.user,
+        to: recipient,
+        subject:"This is to test",
+        html:'<h1>Hii this is the body of text</h1>'
+    }
+
+
+
+    transport.sendMail(mail_options,function(error,result){
+        if(error){
+            console.log( 'Error', error)
+        }else{
+            console.log( 'Success', result)
+        }
+
+        transport.close()
+    })
+
+
+
+
+
+
+    
+}
+
+
+
+
+send_mail('Suraj','surajsinghsultan222@gmail.com')
